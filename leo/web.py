@@ -100,7 +100,7 @@ class LeoLibWeb:
                 if "message" in response:
                     raise LeoLibWebCaptchaError(response['message'])
                 else:
-                    raise LeoLibWebCaptchaError()
+                    raise LeoLibWebCaptchaError("Captcha error")
         except Exception as e:
             raise LeoLibWebCaptchaError(e)
 
@@ -119,7 +119,7 @@ class LeoLibWeb:
         if res.status_code != 302:
             raise LeoLibWebRequestError(res.text)
         if "/login" in res.headers.get("Location") or "/auth/index" in res.headers.get("Location"):
-            raise LeoLibWebAuthenticationError()
+            raise LeoLibWebAuthenticationError("Failed to authenticate")
 
     def book(self, captcha_token, date, seat, start, end) -> None:
         payload = {
@@ -135,11 +135,12 @@ class LeoLibWeb:
                                 **headers_common, **{"Referer": urljoin(self.baseurl, "self")}}, data=payload, allow_redirects=False)
         # Session dies or captcha expires
         if res.status_code != 200:
-            raise LeoLibWebRequestError()
+            raise LeoLibWebRequestError("Failed to book, redirected")
         if "预约失败" in res.text:
             if "请尽快选择其他时段或座位" in res.text:
-                raise LeoLibWebSeatUnavailableError()
+                raise LeoLibWebSeatUnavailableError("Seat unavailable")
             else:
-                raise LeoLibWebBookingUnavailableError()
+                raise LeoLibWebBookingUnavailableError(
+                    "Booking seems unavailable")
         if "凭证号" not in res.text:
-            raise LeoLibWebRequestError()
+            raise LeoLibWebRequestError(f"Unknown error, {res.text}")

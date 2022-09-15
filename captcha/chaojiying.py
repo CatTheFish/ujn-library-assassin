@@ -65,6 +65,8 @@ class Chaojiying(CaptchaInterface):
             if points_expected and points_expected != len(points):
                 raise CaptchaResultError("Points mismatch")
             return response['pic_id'], points
+        except CaptchaResultError as e:
+            raise e
         except Exception as e:
             raise CaptchaRequestError(e)
 

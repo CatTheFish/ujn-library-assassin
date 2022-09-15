@@ -1,0 +1,15 @@
+# Runtime cache
+__pycache__
+
+# Log
+*.log
+
+# Configuration
+.env
+
+# Database
+*.db
+users.json
+
+# Captcha files
+*.jpg

@@ -136,6 +136,7 @@ class Booking(Thread):
             self.book()
             logging.info(
                 f"Seat booking success for user {self.leo_api.username}")
+            self.captcha_helper.stop()
         except Exception as e:
             logging.warning(
                 f"Seat booking failed for user {self.leo_api.username}, {e}")

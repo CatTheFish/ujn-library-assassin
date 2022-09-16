@@ -23,15 +23,17 @@ class Chaojiying(CaptchaInterface):
         img = Image.open(BytesIO(img))
         target = Image.open(BytesIO(target))
         width, height = img.size
+        font_size = 20
+        font_margin = 5
         new_img = Image.new(
-            'RGB', (width, height + target.size[1] + 24), (255, 255, 255))
+            'RGB', (width, height + target.size[1] + font_size + font_margin * 2), (255, 255, 255))
         new_img.paste(img)
         # Append hint text to new image
-        font_size = 16
         draw = ImageDraw.Draw(new_img)
         font = ImageFont.truetype(self.font, font_size)
-        draw.text((0, height), "请依次点击下列字符", (0, 0, 0), font=font)
-        new_img.paste(target, (0, height + font_size))
+        draw.text((font_margin, height + font_margin),
+                  "请依次点击下列字符", (0, 0, 0), font=font)
+        new_img.paste(target, (0, height + font_size + font_margin * 2))
         new_img_bytes = BytesIO()
         new_img.save(new_img_bytes, format="JPEG")
         new_img_bytes.seek(0)

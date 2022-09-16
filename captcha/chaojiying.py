@@ -63,9 +63,12 @@ class Chaojiying(CaptchaInterface):
                 new_img.save(f"logs/{response['pic_id']}.jpg")
             # If number of points presents, check whether the number is match
             if points_expected and points_expected != len(points):
-                raise CaptchaResultError("Points mismatch")
+                raise CaptchaResultError(
+                    "Points mismatch", id=response['pic_id'])
             return response['pic_id'], points
         except CaptchaResultError as e:
+            raise e
+        except CaptchaBusinessError as e:
             raise e
         except Exception as e:
             raise CaptchaRequestError(e)

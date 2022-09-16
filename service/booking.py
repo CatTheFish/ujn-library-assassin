@@ -18,6 +18,9 @@ def auto_retry(func):
             except LeoLibWebSeatUnavailableError as e:
                 args[0].captcha_helper.stop()
                 raise e
+            except LeoLibWebBookingUnavailableError:
+                # Sleep for 1 second
+                sleep(1)
             except Exception as e:
                 logging.error(e)
                 args[0].retry_remaining = args[0].retry_remaining - 1
@@ -41,7 +44,7 @@ class CaptchaHelper(Thread):
         while self.running:
             token_issue_time, token = self.issue_new_token()
             self.token_store.append((token_issue_time, token))
-            sleep(self.expiration - 5)
+            sleep(self.token_expiration - 5)
 
     def get_token(self) -> str:
         while len(self.token_store) > 0:
@@ -57,7 +60,6 @@ class CaptchaHelper(Thread):
 
     @auto_retry
     def issue_new_token(self, with_username=True) -> tuple:
-        captcha_recognition_id = None
         token_issue_time = int(time())
         try:
             # Refresh captcha token
@@ -72,14 +74,15 @@ class CaptchaHelper(Thread):
                 f"Got captcha token={token}, with_username={with_username}")
             return token_issue_time, token
         except CaptchaResultError as e:
+            captcha_recognition_id = e.id
             logging.warning(
                 f"Captcha code {captcha_recognition_id} mismatch, reporting...")
             if captcha_recognition_id:
                 try:
                     self.captcha.report_error(captcha_recognition_id, e)
-                except Exception as e:
+                except Exception as err:
                     logging.error(
-                        f"Failed to report captcha code {captcha_recognition_id}, {e}")
+                        f"Failed to report captcha code {captcha_recognition_id}, {err}")
             raise e
         except LeoLibWebCaptchaError as e:
             logging.warning(

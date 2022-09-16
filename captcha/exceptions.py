@@ -9,5 +9,6 @@ class CaptchaBusinessError(CaptchaRequestError):
 
 
 class CaptchaResultError(CaptchaRequestError):
-    def __init__(self, *args: object) -> None:
+    def __init__(self, *args: object, **kwargs) -> None:
+        self.id = kwargs.get("id")
         super().__init__(*args)

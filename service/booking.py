@@ -1,5 +1,6 @@
 import logging
 from threading import Thread
+from typing import Callable
 from captcha import *
 from leo import *
 from time import sleep, time
@@ -102,7 +103,7 @@ class Booking(Thread):
         self.date = date
         self.start_time = start
         self.end_time = end
-        self.callback = lambda x: None
+        self.push_message_callback = lambda title, message: None
         super().__init__(daemon=True)
 
     @auto_retry
@@ -119,6 +120,9 @@ class Booking(Thread):
         token = self.captcha_helper.get_token()
         self.leo_api.book(token, self.date, self.seat,
                           self.start_time, self.end_time)
+
+    def set_push_callback(self, callback: Callable):
+        self.push_message_callback = callback
 
     def run(self) -> None:
         try:
@@ -137,6 +141,17 @@ class Booking(Thread):
             logging.info(
                 f"Seat booking success for user {self.leo_api.username}")
             self.captcha_helper.stop()
+            try:
+                self.push_message_callback(
+                    "座位预约成功", f"用户 {self.leo_api.username} 座位预约成功, 座位 id {self.seat}, 时间(单位分钟) {self.start_time} - {self.end_time}。")
+            except Exception as e:
+                logging.error(f"Failed to push message {e}")
+
         except Exception as e:
             logging.warning(
                 f"Seat booking failed for user {self.leo_api.username}, {e}")
+            try:
+                self.push_message_callback(
+                    "座位预约失败", f"用户 {self.leo_api.username} 座位预约失败, 座位 id {self.seat}, 时间(单位分钟) {self.start_time} - {self.end_time}，原因 {e}。")
+            except Exception as e:
+                logging.error(f"Failed to push message {e}")

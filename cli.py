@@ -3,6 +3,7 @@ import logging
 from leo import LeoLibWeb
 from util import *
 from captcha import get_captcha_service
+from push import get_push_service
 from dotenv import load_dotenv
 import os
 import json
@@ -26,9 +27,16 @@ if __name__ == "__main__":
     if interval > 0:
         logging.info(f"Sleep {interval}")
         sleep(interval)
+
+    # Initialize captcha
     captcha_config = extract_captcha_config()
     captcha = get_captcha_service(
         os.environ.get("CAPTCHA_SERVICE"), captcha_config)
+
+    # Initialize push
+    push_config = extract_push_config()
+    push = get_push_service(os.environ.get("PUSH_SERVICE"), push_config)
+    # Get user database
     with open("users.json", "r") as f:
         users = json.load(f)
     for user in users:
@@ -43,6 +51,7 @@ if __name__ == "__main__":
             f"Start booking for username={user['username']}, seat={user['seat']}, date={date_to_book_str}, time={user['start_time']}-{user['end_time']}")
         booking = Booking(api, captcha, int(os.environ.get("CAPTCHA_REFRESH_INTERVAL")), int(os.environ.get(
             "MAX_RETRY_COUNT")), user.get("seat"), date_to_book_str, user.get("start_time"), end_time)
+        booking.set_push_callback(push.get_callback())
         booking.start()
         thread_pool.append(booking)
 

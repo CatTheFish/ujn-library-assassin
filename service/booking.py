@@ -17,7 +17,8 @@ def auto_retry(func):
             except LeoLibWebAuthenticationError as e:
                 raise e
             except LeoLibWebSeatUnavailableError as e:
-                args[0].captcha_helper.stop()
+                if isinstance(args[0], Booking):
+                    args[0].captcha_helper.stop()
                 raise e
             except LeoLibWebBookingUnavailableError:
                 # Sleep for 1 second
@@ -25,7 +26,7 @@ def auto_retry(func):
             except Exception as e:
                 logging.error(e)
                 args[0].retry_remaining = args[0].retry_remaining - 1
-        if args[0].captcha_helper:
+        if isinstance(args[0], Booking):
             args[0].captcha_helper.stop()
         raise Exception("Ran out of retries")
     return wrapper

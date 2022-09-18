@@ -26,7 +26,7 @@ class Chaojiying(CaptchaInterface):
         font_size = 20
         font_margin = 5
         new_img = Image.new(
-            'RGB', (width, height + target.size[1] + font_size + font_margin * 2), (255, 255, 255))
+            'RGB', (width, height + target.size[1] + font_size + font_margin * 2), (170, 170, 170))
         new_img.paste(img)
         # Append hint text to new image
         draw = ImageDraw.Draw(new_img)

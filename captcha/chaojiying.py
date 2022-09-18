@@ -83,7 +83,7 @@ class Chaojiying(CaptchaInterface):
             "softid": self.app_id
         }
         res = self.session.post(
-            "http://upload.chaojiying.net/Upload/Processing.php", data=payload)
+            "http://upload.chaojiying.net/Upload/ReportError.php", data=payload)
         try:
             response = res.json()
             if response['err_no'] != 0:
